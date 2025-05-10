@@ -26,6 +26,8 @@ interface KazananYonetimProps {
 
 const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
   const [kazananlar, setKazananlar] = useState<Kazanan[]>([]);
+  const [filteredKazananlar, setFilteredKazananlar] = useState<Kazanan[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<Omit<Kazanan, 'id' | 'created_at' | 'cekilis'>>({
     hesap_adi: '',
     ad_soyad: '',
@@ -49,6 +51,17 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       }));
     }
   }, [cekilisId]);
+
+  useEffect(() => {
+    const filtered = kazananlar.filter(kazanan => 
+      kazanan.hesap_adi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kazanan.ad_soyad.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kazanan.tel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kazanan.adres.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kazanan.notlar.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredKazananlar(filtered);
+  }, [searchTerm, kazananlar]);
 
   const fetchKazananlar = async () => {
     try {
@@ -173,26 +186,42 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       <div className="h-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <h1 className="text-3xl font-bold text-gray-100">Kazanan Yönetimi</h1>
-          <button
-            onClick={() => {
-              setFormData({ 
-                hesap_adi: '', 
-                ad_soyad: '', 
-                tel: '', 
-                adres: '', 
-                notlar: '',
-                cekilis_id: cekilisId || 0
-              });
-              setEditId(null);
-              setIsModalOpen(true);
-            }}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 border border-transparent rounded-lg shadow-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-purple-500 transition-all"
-          >
-            <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Yeni Kazanan Ekle
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+              <input
+                type="text"
+                placeholder="Ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setFormData({ 
+                  hesap_adi: '', 
+                  ad_soyad: '', 
+                  tel: '', 
+                  adres: '', 
+                  notlar: '',
+                  cekilis_id: cekilisId || 0
+                });
+                setEditId(null);
+                setIsModalOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 border border-transparent rounded-lg shadow-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-purple-500 transition-all"
+            >
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Yeni Kazanan Ekle
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -256,7 +285,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                   </tr>
                 </thead>
                 <tbody className="bg-gray-900 bg-opacity-50 divide-y divide-gray-800">
-                  {kazananlar.map((kazanan) => (
+                  {filteredKazananlar.map((kazanan) => (
                     <tr key={kazanan.id} className="hover:bg-gray-800 hover:bg-opacity-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-100">{kazanan.cekilis?.ad}</div>
@@ -274,7 +303,14 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-100">{kazanan.hesap_adi}</div>
+                            <a 
+                              href={`https://x.com/${kazanan.hesap_adi}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-gray-100 hover:text-purple-400 transition-colors"
+                            >
+                              {kazanan.hesap_adi}
+                            </a>
                           </div>
                         </div>
                       </td>
