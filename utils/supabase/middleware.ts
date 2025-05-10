@@ -39,12 +39,19 @@ export const updateSession = async (request: NextRequest) => {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const user = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+    // Auth sayfalarına izin ver
+    const isAuthPage = request.nextUrl.pathname.startsWith("/sign-in") ||
+      request.nextUrl.pathname.startsWith("/sign-up") ||
+      request.nextUrl.pathname.startsWith("/forgot-password") ||
+      request.nextUrl.pathname.startsWith("/auth/callback");
+
+    // Kullanıcı giriş yapmamışsa ve auth sayfasında değilse, sign-in sayfasına yönlendir
+    if (!user.data.user && !isAuthPage) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
+    // Kullanıcı giriş yapmışsa ve auth sayfasındaysa, protected sayfasına yönlendir
+    if (user.data.user && isAuthPage) {
       return NextResponse.redirect(new URL("/protected", request.url));
     }
 

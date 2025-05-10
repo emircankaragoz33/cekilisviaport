@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import KazananYonetim from './kazananlar';
+import * as XLSX from 'xlsx';
 
 interface Cekilis {
   id: number;
@@ -117,10 +118,42 @@ const CekilisYonetim = () => {
     }
   };
 
+  const handleExcelDownload = async (cekilis: Cekilis) => {
+    try {
+      const res = await fetch(`/api/kazananlar?cekilisId=${cekilis.id}`);
+      const kazananlar = await res.json();
+
+      if (!Array.isArray(kazananlar)) {
+        throw new Error('Geçersiz veri formatı');
+      }
+
+      // Excel için veriyi hazırla
+      const excelData = kazananlar.map(k => ({
+        'Hesap Adı': k.hesap_adi,
+        'Ad Soyad': k.ad_soyad,
+        'Telefon': k.tel,
+        'Adres': k.adres,
+        'Notlar': k.notlar,
+        'Kayıt Tarihi': new Date(k.created_at).toLocaleDateString('tr-TR')
+      }));
+
+      // Excel dosyasını oluştur
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Kazananlar');
+
+      // Dosyayı indir
+      XLSX.writeFile(wb, `${cekilis.ad}_kazananlar.xlsx`);
+    } catch (error) {
+      console.error('Excel indirme hatası:', error);
+      alert('Excel dosyası oluşturulurken bir hata oluştu');
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-black text-gray-100">
-      <div className="h-full w-full px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="h-full w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <h1 className="text-3xl font-bold text-gray-100 tracking-tight">Çekiliş Yönetimi</h1>
           <button
             onClick={() => {
@@ -131,7 +164,7 @@ const CekilisYonetim = () => {
               setEditId(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center px-5 py-2 border border-transparent rounded-lg shadow-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-purple-500 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 border border-transparent rounded-lg shadow-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-purple-500 transition-all"
           >
             <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -156,11 +189,11 @@ const CekilisYonetim = () => {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center min-h-screen">
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : cekilisler.length === 0 ? (
-          <div className="text-center py-16 bg-gray-900 bg-opacity-50 rounded-xl shadow-2xl backdrop-blur-sm min-h-96 flex items-center justify-center border border-gray-800">
+          <div className="text-center py-16 bg-gray-900 bg-opacity-50 rounded-xl shadow-2xl backdrop-blur-sm min-h-[calc(100vh-200px)] flex items-center justify-center border border-gray-800">
             <div>
               <div className="text-gray-500 mb-4">
                 <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -181,37 +214,45 @@ const CekilisYonetim = () => {
                 }`}
               >
                 <div className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-gray-100">{cekilis.ad}</h3>
                       <p className="text-sm text-gray-400">
                         {new Date(cekilis.tarih).toLocaleDateString('tr-TR')}
                       </p>
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleExcelDownload(cekilis)}
+                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-green-400 hover:text-green-300 transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
+                        title="Excel İndir"
+                      >
+                        <div className="flex items-center">
+                          <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Excel İndir
+                        </div>
+                      </button>
                       <button
                         onClick={() => setSelectedCekilisId(selectedCekilisId === cekilis.id ? null : cekilis.id)}
-                        className="px-4 py-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors"
+                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
                       >
                         {selectedCekilisId === cekilis.id ? 'Kapat' : 'Kazananları Gör'}
                       </button>
                       <button
                         onClick={() => handleEdit(cekilis)}
-                        className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
                         title="Düzenle"
                       >
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                        Düzenle
                       </button>
                       <button
                         onClick={() => handleDelete(cekilis.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
                         title="Sil"
                       >
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        Sil
                       </button>
                     </div>
                   </div>
