@@ -43,28 +43,44 @@ export async function POST(request: Request) {
     const supabase = createRouteHandlerClient({ cookies });
     const body = await request.json();
 
-    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
-    const { data: existingKazanan, error: checkError } = await supabase
-      .from('kazananlar')
-      .select('id, cekilis_id')
-      .eq('hesap_adi', body.hesap_adi)
-      .single();
+    console.log('Gelen veri:', body);
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116: no rows returned
+    // Hesap adı boş mu kontrolü
+    if (!body.hesap_adi || body.hesap_adi.trim() === '') {
+      return NextResponse.json(
+        { error: 'Hesap adı boş olamaz!' },
+        { status: 400 }
+      );
+    }
+
+    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
+    const { data: existingKazananlar, error: checkError } = await supabase
+      .from('kazananlar')
+      .select('id, cekilis_id, hesap_adi')
+      .eq('hesap_adi', body.hesap_adi.trim());
+
+    console.log('Mevcut kazananlar:', existingKazananlar);
+
+    if (checkError) {
       console.error('Kontrol hatası:', checkError);
       return NextResponse.json({ error: 'Hesap adı kontrolü yapılamadı' }, { status: 500 });
     }
 
-    if (existingKazanan) {
+    if (existingKazananlar && existingKazananlar.length > 0) {
+      console.log('Aynı hesap adı bulundu:', existingKazananlar);
       return NextResponse.json(
         { error: 'Bu hesap adı başka bir çekilişte kullanılıyor!' },
         { status: 400 }
       );
     }
 
+    // Yeni kazananı ekle
     const { data, error } = await supabase
       .from('kazananlar')
-      .insert([body])
+      .insert([{
+        ...body,
+        hesap_adi: body.hesap_adi.trim()
+      }])
       .select()
       .single();
 
@@ -89,29 +105,45 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, ...updateData } = body;
 
-    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
-    const { data: existingKazanan, error: checkError } = await supabase
-      .from('kazananlar')
-      .select('id, cekilis_id')
-      .eq('hesap_adi', updateData.hesap_adi)
-      .neq('id', id) // Kendisi hariç kontrol et
-      .single();
+    console.log('Güncellenecek veri:', { id, ...updateData });
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116: no rows returned
+    // Hesap adı boş mu kontrolü
+    if (!updateData.hesap_adi || updateData.hesap_adi.trim() === '') {
+      return NextResponse.json(
+        { error: 'Hesap adı boş olamaz!' },
+        { status: 400 }
+      );
+    }
+
+    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
+    const { data: existingKazananlar, error: checkError } = await supabase
+      .from('kazananlar')
+      .select('id, cekilis_id, hesap_adi')
+      .eq('hesap_adi', updateData.hesap_adi.trim())
+      .neq('id', id);
+
+    console.log('Mevcut kazananlar:', existingKazananlar);
+
+    if (checkError) {
       console.error('Kontrol hatası:', checkError);
       return NextResponse.json({ error: 'Hesap adı kontrolü yapılamadı' }, { status: 500 });
     }
 
-    if (existingKazanan) {
+    if (existingKazananlar && existingKazananlar.length > 0) {
+      console.log('Aynı hesap adı bulundu:', existingKazananlar);
       return NextResponse.json(
         { error: 'Bu hesap adı başka bir çekilişte kullanılıyor!' },
         { status: 400 }
       );
     }
 
+    // Kazananı güncelle
     const { data, error } = await supabase
       .from('kazananlar')
-      .update(updateData)
+      .update({
+        ...updateData,
+        hesap_adi: updateData.hesap_adi.trim()
+      })
       .eq('id', id)
       .select()
       .single();
