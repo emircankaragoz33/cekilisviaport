@@ -40,7 +40,14 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchKazananlar();
+    if (cekilisId) {
+      fetchKazananlar();
+      // Form verilerini güncelle
+      setFormData(prev => ({
+        ...prev,
+        cekilis_id: cekilisId
+      }));
+    }
   }, [cekilisId]);
 
   const fetchKazananlar = async () => {
@@ -91,8 +98,26 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!cekilisId) {
+      alert('Çekiliş ID bulunamadı!');
+      return;
+    }
+
+    // Hesap adı kontrolü
+    const isDuplicate = kazananlar.some(
+      k => k.hesap_adi.toLowerCase() === formData.hesap_adi.toLowerCase() && 
+           k.cekilis_id === cekilisId
+    );
+
+    if (isDuplicate) {
+      alert('Bu hesap adı bu çekilişte zaten ekli!');
+      return;
+    }
+
     const method = editId ? 'PUT' : 'POST';
-    const body = editId ? { ...formData, id: editId } : formData;
+    const body = editId 
+      ? { ...formData, id: editId, cekilis_id: cekilisId }
+      : { ...formData, cekilis_id: cekilisId };
 
     try {
       const res = await fetch('/api/kazananlar', {
@@ -109,7 +134,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
           tel: '', 
           adres: '', 
           notlar: '',
-          cekilis_id: cekilisId || 0
+          cekilis_id: cekilisId
         });
         setEditId(null);
         setIsModalOpen(false);
@@ -119,6 +144,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       }
     } catch (error) {
       console.error('Hata:', error);
+      alert('Bir hata oluştu');
     }
   };
 
