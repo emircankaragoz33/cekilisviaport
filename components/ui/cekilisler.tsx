@@ -43,7 +43,7 @@ const CekilisYonetim = () => {
       }
 
       if (Array.isArray(data)) {
-        setCekilisler(data);
+        setCekilisler(data.sort((a, b) => new Date(b.tarih).getTime() - new Date(a.tarih).getTime()));
       } else {
         console.error('API geçersiz veri döndürdü:', data);
         setError('Veri formatı geçersiz');
