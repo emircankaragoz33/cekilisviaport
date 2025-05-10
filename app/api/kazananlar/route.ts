@@ -43,6 +43,25 @@ export async function POST(request: Request) {
     const supabase = createRouteHandlerClient({ cookies });
     const body = await request.json();
 
+    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
+    const { data: existingKazanan, error: checkError } = await supabase
+      .from('kazananlar')
+      .select('id, cekilis_id')
+      .eq('hesap_adi', body.hesap_adi)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116: no rows returned
+      console.error('Kontrol hatası:', checkError);
+      return NextResponse.json({ error: 'Hesap adı kontrolü yapılamadı' }, { status: 500 });
+    }
+
+    if (existingKazanan) {
+      return NextResponse.json(
+        { error: 'Bu hesap adı başka bir çekilişte kullanılıyor!' },
+        { status: 400 }
+      );
+    }
+
     const { data, error } = await supabase
       .from('kazananlar')
       .insert([body])
@@ -69,6 +88,26 @@ export async function PUT(request: Request) {
     const supabase = createRouteHandlerClient({ cookies });
     const body = await request.json();
     const { id, ...updateData } = body;
+
+    // Önce aynı hesap adının başka çekilişlerde olup olmadığını kontrol et
+    const { data: existingKazanan, error: checkError } = await supabase
+      .from('kazananlar')
+      .select('id, cekilis_id')
+      .eq('hesap_adi', updateData.hesap_adi)
+      .neq('id', id) // Kendisi hariç kontrol et
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116: no rows returned
+      console.error('Kontrol hatası:', checkError);
+      return NextResponse.json({ error: 'Hesap adı kontrolü yapılamadı' }, { status: 500 });
+    }
+
+    if (existingKazanan) {
+      return NextResponse.json(
+        { error: 'Bu hesap adı başka bir çekilişte kullanılıyor!' },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from('kazananlar')

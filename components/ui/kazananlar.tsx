@@ -105,17 +105,6 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       return;
     }
 
-    // Hesap adı kontrolü
-    const isDuplicate = kazananlar.some(
-      k => k.hesap_adi.toLowerCase() === formData.hesap_adi.toLowerCase() && 
-           k.cekilis_id === cekilisId
-    );
-
-    if (isDuplicate) {
-      alert('Bu hesap adı bu çekilişte zaten ekli!');
-      return;
-    }
-
     const method = editId ? 'PUT' : 'POST';
     const body = editId 
       ? { ...formData, id: editId, cekilis_id: cekilisId }
@@ -129,21 +118,24 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       });
 
       const result = await res.json();
-      if (res.ok) {
-        setFormData({ 
-          hesap_adi: '', 
-          ad_soyad: '', 
-          tel: '', 
-          adres: '', 
-          notlar: '',
-          cekilis_id: cekilisId
-        });
-        setEditId(null);
-        setIsModalOpen(false);
-        fetchKazananlar();
-      } else {
-        alert(result.message || 'Bir hata oluştu');
+      
+      if (!res.ok) {
+        // API'den gelen hata mesajını göster
+        alert(result.error || 'Bir hata oluştu');
+        return;
       }
+
+      setFormData({ 
+        hesap_adi: '', 
+        ad_soyad: '', 
+        tel: '', 
+        adres: '', 
+        notlar: '',
+        cekilis_id: cekilisId
+      });
+      setEditId(null);
+      setIsModalOpen(false);
+      fetchKazananlar();
     } catch (error) {
       console.error('Hata:', error);
       alert('Bir hata oluştu');
