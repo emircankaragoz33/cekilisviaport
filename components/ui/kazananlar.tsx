@@ -28,6 +28,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
   const [kazananlar, setKazananlar] = useState<Kazanan[]>([]);
   const [filteredKazananlar, setFilteredKazananlar] = useState<Kazanan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<Omit<Kazanan, 'id' | 'created_at' | 'cekilis'>>({
     hesap_adi: '',
     ad_soyad: '',
@@ -181,6 +182,13 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
     }
   };
 
+  const copyDMMessage = (hesapAdi: string) => {
+    const message = `Merhaba @${hesapAdi}, çekilişimizi kazandınız! 🎉\n\nDetaylı bilgi için DM'den ulaşabilirsiniz.`;
+    navigator.clipboard.writeText(message);
+    setCopiedMessage(hesapAdi);
+    setTimeout(() => setCopiedMessage(null), 2000);
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-gray-900 to-black text-gray-100">
       <div className="h-full px-4 sm:px-6 lg:px-8 py-8">
@@ -319,17 +327,18 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
-                          <a
-                            href={`https://twitter.com/intent/tweet?text=@${kazanan.hesap_adi} Tebrikler! Çekilişimizi kazandınız. Detaylar için DM'den ulaşabilirsiniz.`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-400 hover:text-green-300 transition-colors"
-                            title="Tweet Gönder"
+                          <button
+                            onClick={() => copyDMMessage(kazanan.hesap_adi)}
+                            className={`text-green-400 hover:text-green-300 transition-colors relative group ${copiedMessage === kazanan.hesap_adi ? 'text-green-300' : ''}`}
+                            title="DM Mesajını Kopyala"
                           >
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                             </svg>
-                          </a>
+                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                              {copiedMessage === kazanan.hesap_adi ? 'Kopyalandı!' : 'DM Mesajını Kopyala'}
+                            </span>
+                          </button>
                           <button
                             onClick={() => handleEdit(kazanan)}
                             className="text-blue-400 hover:text-blue-300 transition-colors"
