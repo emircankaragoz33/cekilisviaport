@@ -262,9 +262,6 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                 <thead className="bg-gray-900">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                      Çekiliş
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Hesap Adı
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -287,12 +284,6 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                 <tbody className="bg-gray-900 bg-opacity-50 divide-y divide-gray-800">
                   {filteredKazananlar.map((kazanan) => (
                     <tr key={kazanan.id} className="hover:bg-gray-800 hover:bg-opacity-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-100">{kazanan.cekilis?.ad}</div>
-                        <div className="text-xs text-gray-400">
-                          {new Date(kazanan.cekilis?.tarih || '').toLocaleDateString('tr-TR')}
-                        </div>
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
