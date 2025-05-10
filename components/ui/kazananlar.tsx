@@ -75,7 +75,9 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
       }
 
       if (Array.isArray(data)) {
-        setKazananlar(data);
+        // Sadece ilgili çekiliş ID'sine sahip kazananları filtrele
+        const filteredKazananlar = data.filter(k => k.cekilis_id === cekilisId);
+        setKazananlar(filteredKazananlar);
       } else {
         console.error('API geçersiz veri döndürdü:', data);
         setError('Veri formatı geçersiz');
