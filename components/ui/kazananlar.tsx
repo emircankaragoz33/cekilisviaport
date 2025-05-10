@@ -182,7 +182,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-black text-gray-100">
+    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-gray-900 to-black text-gray-100">
       <div className="h-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <h1 className="text-3xl font-bold text-gray-100">Kazanan Yönetimi</h1>
@@ -193,7 +193,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                 placeholder="Ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                className="w-full px-4 py-2 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -225,7 +225,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-900 bg-opacity-20 border-l-4 border-red-500 p-4 rounded-r">
+          <div className="mb-6 bg-red-900/20 backdrop-blur-sm border-l-4 border-red-500 p-4 rounded-r">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,7 +244,7 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : kazananlar.length === 0 ? (
-          <div className="text-center py-16 bg-gray-900 bg-opacity-50 rounded-xl shadow-2xl min-h-[calc(100vh-200px)] flex items-center justify-center border border-gray-800">
+          <div className="text-center py-16 bg-gray-900/30 backdrop-blur-sm rounded-xl shadow-2xl min-h-[calc(100vh-200px)] flex items-center justify-center border border-gray-800/50">
             <div>
               <div className="text-gray-500 mb-4">
                 <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,10 +256,10 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
             </div>
           </div>
         ) : (
-          <div className="bg-gray-900 bg-opacity-70 rounded-xl shadow-2xl overflow-hidden border border-gray-800">
+          <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-800/50">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-800">
-                <thead className="bg-gray-900">
+              <table className="min-w-full divide-y divide-gray-800/50">
+                <thead className="bg-gray-900/50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Hesap Adı
@@ -281,9 +281,9 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-gray-900 bg-opacity-50 divide-y divide-gray-800">
+                <tbody className="bg-gray-900/20 divide-y divide-gray-800/50">
                   {filteredKazananlar.map((kazanan) => (
-                    <tr key={kazanan.id} className="hover:bg-gray-800 hover:bg-opacity-50 transition-colors">
+                    <tr key={kazanan.id} className="hover:bg-gray-800/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -319,6 +319,17 @@ const KazananYonetim = ({ cekilisId }: KazananYonetimProps) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
+                          <a
+                            href={`https://twitter.com/intent/tweet?text=@${kazanan.hesap_adi} Tebrikler! Çekilişimizi kazandınız. Detaylar için DM'den ulaşabilirsiniz.`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-400 hover:text-green-300 transition-colors"
+                            title="Tweet Gönder"
+                          >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </a>
                           <button
                             onClick={() => handleEdit(kazanan)}
                             className="text-blue-400 hover:text-blue-300 transition-colors"
